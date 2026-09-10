@@ -34,6 +34,10 @@ launcher; if they are passed to the application, `Main` reports an error such as
 Open `http://localhost:8080` in one browser window per player. Offline mode generates deterministic sample story
 variations and uses word-overlap scoring, making it useful for setup and demos without credentials.
 
+The backend also writes two runtime logs in `logs\`:
+- `http.log`: every HTTP request (method/path/body) with its response status and payload
+- `llm.log`: every remote LLM prompt with the corresponding provider response body
+
 ## Standalone executable JAR
 
 Build a self-contained application JAR containing the backend, frontend, and LLM prompt templates:
@@ -53,8 +57,8 @@ Remote LLM options work with the JAR in the same way as the classpath launch des
 
 ## Remote LLM mode
 
-Start without `--local`; the program prompts for the chat-completions URL, API key, and story theme, verifies the remote
-connection, then prints the server port:
+Start without `--local`; the program prompts for the chat-completions URL, API key, model name, and story theme,
+verifies the remote connection, then prints the server port:
 
 ```powershell
 java --add-modules jdk.httpserver -cp out\production backend.storyweave.Main
@@ -69,7 +73,7 @@ java --add-modules jdk.httpserver -cp out\production backend.storyweave.Main `
 ```
 
 The endpoint must accept the common `model`, `messages`, `temperature`, and `max_tokens` request fields and return text
-at `choices[0].message.content`. The default model is `gpt-4o-mini`; it can also be set through `STORY_GAME_MODEL`.
+at `choices[0].message.content`.
 
 ## Game options
 

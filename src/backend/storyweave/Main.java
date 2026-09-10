@@ -20,7 +20,7 @@ public final class Main {
         } else {
             String endpoint = requiredInput(options, "url", "Remote LLM chat-completions URL: ", false);
             String apiKey = requiredInput(options, "key", "Remote LLM API key: ", true);
-            String model = options.getOrDefault("model", System.getenv("STORY_GAME_MODEL"));
+            String model = requiredInput(options, "model", "Remote LLM model name: ", false);
             RemoteStoryService remote = new RemoteStoryService(endpoint, apiKey, model);
             System.out.println("Verifying remote LLM credentials...");
             remote.verify();
@@ -39,6 +39,8 @@ public final class Main {
             server.start();
             Runtime.getRuntime().addShutdownHook(new Thread(server::close));
             System.out.println("Story game server started on http://localhost:" + server.port());
+            System.out.println("HTTP log: " + ServerLogger.httpLogFile().toAbsolutePath());
+            System.out.println("LLM call log: " + ServerLogger.llmLogFile().toAbsolutePath());
             System.out.println("Waiting for " + playerCount + " players. Press Ctrl+C to stop.");
             new CountDownLatch(1).await();
         }

@@ -70,6 +70,7 @@ public final class RemoteStoryService implements StoryService {
                 "max_tokens", maxTokens,
                 "messages", List.of(Map.of("role", "user", "content", prompt))
         );
+        ServerLogger.logLlmRequest(endpoint.toString(), model, maxTokens, prompt);
         HttpRequest request = HttpRequest.newBuilder(endpoint)
                 .timeout(Duration.ofSeconds(60))
                 .header("Authorization", "Bearer " + apiKey)
@@ -77,8 +78,9 @@ public final class RemoteStoryService implements StoryService {
                 .POST(HttpRequest.BodyPublishers.ofString(Json.stringify(payload)))
                 .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        ServerLogger.logLlmResponse(endpoint.toString(), response.statusCode(), response.body());
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
-            throw new IOException("LLM returned HTTP " + response.statusCode() + ": " + response.body());
+            throw new IOException(describeHttpError(response.statusCode(), response.body()));
         }
         try {
             Map<String, Object> body = Json.parseObject(response.body());
@@ -89,6 +91,36 @@ public final class RemoteStoryService implements StoryService {
         } catch (RuntimeException exception) {
             throw new IOException("LLM response did not contain choices[0].message.content", exception);
         }
+    }
+
+    private static String describeHttpError(int statusCode, String responseBody) {
+        String details = extractErrorDetails(responseBody);
+        if (statusCode == 503 && details.contains("code=no_providers_configured")) {
+            return "LLM returned HTTP 503 (no providers configured). Configure at least one upstream provider API key "
+                    + "for the selected model in your LLM dashboard, choose a model that already has a key, or run "
+                    + "with --local. Remote details: " + details;
+        }
+        return "LLM returned HTTP " + statusCode + ": " + details;
+    }
+
+    private static String extractErrorDetails(String responseBody) {
+        if (responseBody == null || responseBody.isBlank()) {
+            return "(empty response body)";
+        }
+        try {
+            Map<String, Object> parsed = Json.parseObject(responseBody);
+            Object errorValue = parsed.get("error");
+            if (errorValue instanceof Map<?, ?> error) {
+                Object code = error.get("code");
+                Object message = error.get("message");
+                String codeText = code == null ? "unknown" : String.valueOf(code);
+                String messageText = message == null ? responseBody : String.valueOf(message);
+                return "code=" + codeText + ", message=" + messageText;
+            }
+        } catch (RuntimeException ignored) {
+            // Keep the original body when it is not valid JSON or does not follow the expected shape.
+        }
+        return responseBody;
     }
 
     private static int parseScore(String response) throws IOException {

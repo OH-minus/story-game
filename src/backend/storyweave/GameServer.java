@@ -175,12 +175,16 @@ public final class GameServer implements AutoCloseable {
         exchange.getResponseHeaders().set("Content-Type", contentType);
         exchange.sendResponseHeaders(200, content.length);
         exchange.getResponseBody().write(content);
+        ServerLogger.logHttp(exchange.getRequestMethod(), pathAndQuery(exchange.getRequestURI()), requestBody(exchange), 200,
+                "<" + fileName + ", bytes=" + content.length + ", contentType=" + contentType + ">");
         exchange.close();
     }
 
     private static Map<String, Object> readJson(HttpExchange exchange) throws IOException {
         try (InputStream body = exchange.getRequestBody()) {
-            return Json.parseObject(new String(body.readAllBytes(), StandardCharsets.UTF_8));
+            String text = new String(body.readAllBytes(), StandardCharsets.UTF_8);
+            exchange.setAttribute("requestBody", text);
+            return Json.parseObject(text);
         }
     }
 
@@ -220,12 +224,15 @@ public final class GameServer implements AutoCloseable {
     }
 
     private static void sendJson(HttpExchange exchange, int status, Object body) throws IOException {
-        byte[] content = Json.stringify(body).getBytes(StandardCharsets.UTF_8);
+        String responseText = Json.stringify(body);
+        byte[] content = responseText.getBytes(StandardCharsets.UTF_8);
         Headers headers = exchange.getResponseHeaders();
         addCommonHeaders(headers);
         headers.set("Content-Type", "application/json; charset=utf-8");
         exchange.sendResponseHeaders(status, content.length);
         exchange.getResponseBody().write(content);
+        ServerLogger.logHttp(exchange.getRequestMethod(), pathAndQuery(exchange.getRequestURI()), requestBody(exchange), status,
+                responseText);
         exchange.close();
     }
 
@@ -238,5 +245,15 @@ public final class GameServer implements AutoCloseable {
         headers.set("Access-Control-Allow-Headers", "Content-Type");
         headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
         headers.set("Cache-Control", "no-store");
+    }
+
+    private static String requestBody(HttpExchange exchange) {
+        Object value = exchange.getAttribute("requestBody");
+        return value == null ? "" : String.valueOf(value);
+    }
+
+    private static String pathAndQuery(URI uri) {
+        String query = uri.getRawQuery();
+        return query == null ? uri.getPath() : uri.getPath() + "?" + query;
     }
 }
