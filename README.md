@@ -34,9 +34,12 @@ launcher; if they are passed to the application, `Main` reports an error such as
 Open `http://localhost:8080` in one browser window per player. Offline mode generates deterministic sample story
 variations and uses word-overlap scoring, making it useful for setup and demos without credentials.
 
-The backend also writes two runtime logs in `logs\`:
-- `http.log`: every HTTP request (method/path/body) with its response status and payload
-- `llm.log`: every remote LLM prompt with the corresponding provider response body
+The backend creates a new timestamped log file for each run in both log categories:
+- `logs\http\<timestamp>.log`: every HTTP request (method/path/body) with its response status and payload
+- `logs\llm\<timestamp>.log`: every remote LLM prompt with the corresponding provider response body
+
+Both files use the same UTC startup timestamp in their filename, and all logs from that process are appended to those
+files until the program stops.
 
 ## Standalone executable JAR
 

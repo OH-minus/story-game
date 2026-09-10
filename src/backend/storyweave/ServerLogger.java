@@ -6,11 +6,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
 final class ServerLogger {
     private static final Path LOG_DIRECTORY = Path.of("logs");
-    private static final Path HTTP_LOG_FILE = LOG_DIRECTORY.resolve("http.log");
-    private static final Path LLM_LOG_FILE = LOG_DIRECTORY.resolve("llm.log");
+    private static final String RUN_TIMESTAMP = DateTimeFormatter.ofPattern("uuuuMMdd-HHmmss-SSS")
+            .withZone(ZoneOffset.UTC)
+            .format(Instant.now());
+    private static final Path HTTP_LOG_FILE = LOG_DIRECTORY.resolve("http").resolve(RUN_TIMESTAMP + ".log");
+    private static final Path LLM_LOG_FILE = LOG_DIRECTORY.resolve("llm").resolve(RUN_TIMESTAMP + ".log");
 
     private ServerLogger() {
     }
@@ -51,7 +56,7 @@ final class ServerLogger {
 
     private static synchronized void append(Path file, String line) {
         try {
-            Files.createDirectories(LOG_DIRECTORY);
+            Files.createDirectories(file.getParent());
             Files.writeString(file, line + System.lineSeparator(), StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         } catch (IOException exception) {

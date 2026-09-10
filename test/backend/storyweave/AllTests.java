@@ -7,6 +7,7 @@ public final class AllTests {
     public static void main(String[] arguments) throws Exception {
         JsonTest.run();
         GameEngineTest.run();
+        ServerLoggerTest.run();
         GameServerTest.run();
         System.out.println("All Storyweave tests passed.");
     }
