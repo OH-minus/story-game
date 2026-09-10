@@ -111,6 +111,7 @@ function renderState(state) {
     }
     renderPlayers(state);
     renderStory(state.sharedStory);
+    elements.referenceStory.textContent = state.story;
     const myTurn = state.phase === "PLAYING" && state.currentPlayerId === playerId;
     elements.tokenInput.disabled = !myTurn;
     elements.referencePanel.classList.toggle("hidden", state.phase === "WAITING");
