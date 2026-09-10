@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A multiplayer collaborative storytelling game">
+    <title>Storyweave</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="ambient ambient-one"></div>
+<div class="ambient ambient-two"></div>
+
+<main id="connectView" class="connect-shell">
+    <section class="connect-card">
+        <div class="brand-mark" aria-hidden="true">S</div>
+        <p class="eyebrow">Collaborative storytelling</p>
+        <h1>Storyweave</h1>
+        <p class="lead">Remember your version. Shape one story together. Make every word count.</p>
+        <form id="connectForm" novalidate>
+            <label for="serverAddress">Server address</label>
+            <input id="serverAddress" name="serverAddress" type="url" autocomplete="url"
+                   placeholder="http://localhost:8080" required>
+            <label for="playerName">Player name</label>
+            <input id="playerName" name="playerName" type="text" maxlength="24" autocomplete="nickname"
+                   spellcheck="false" placeholder="No spaces, ASCII only" pattern="[!-~]{1,24}" required>
+            <button id="connectButton" class="primary-button" type="submit">
+                <span>Enter the story</span><span aria-hidden="true">→</span>
+            </button>
+        </form>
+        <p id="connectStatus" class="status-message" role="status"></p>
+    </section>
+</main>
+
+<main id="gameView" class="game-shell hidden">
+    <aside id="playerSidebar" class="sidebar">
+        <div class="sidebar-heading">
+            <div>
+                <p class="eyebrow">The writers</p>
+                <h2>Players</h2>
+            </div>
+            <button id="sidebarToggle" class="icon-button" type="button" aria-label="Collapse player list"
+                    aria-expanded="true">‹</button>
+        </div>
+        <div id="playerList" class="player-list"></div>
+    </aside>
+
+    <section class="game-content">
+        <header class="game-header">
+            <div>
+                <p class="eyebrow">Live session</p>
+                <p id="instruction" class="instruction">Waiting for players…</p>
+            </div>
+            <div class="header-timer" aria-live="polite">
+                <span id="timerLabel">Your time</span>
+                <strong id="headerTimer">--:--</strong>
+            </div>
+        </header>
+
+        <section id="referencePanel" class="reference-panel">
+            <div class="panel-title">
+                <span>Your private story</span>
+                <span class="privacy-pill">Only you can see this</span>
+            </div>
+            <p id="referenceStory"></p>
+        </section>
+
+        <section class="story-workspace" aria-label="Shared story editor">
+            <div class="workspace-heading">
+                <div>
+                    <p class="eyebrow">The shared story</p>
+                    <h2>Write the next beat</h2>
+                </div>
+                <span id="turnBadge" class="turn-badge">Waiting</span>
+            </div>
+            <div id="storyText" class="story-text" aria-live="polite">
+                <span class="empty-story">The first word is waiting to be written.</span>
+            </div>
+            <div class="composer">
+                <label class="sr-only" for="tokenInput">One word or punctuation mark</label>
+                <input id="tokenInput" type="text" autocomplete="off" autocapitalize="sentences" spellcheck="true"
+                       placeholder="One word or punctuation mark" disabled>
+                <span id="tokenHint" class="token-hint">No spaces · one token</span>
+            </div>
+        </section>
+
+        <button id="submitButton" class="submit-button" type="button" disabled>Submit</button>
+        <p id="gameStatus" class="status-message game-status" role="status"></p>
+    </section>
+</main>
+
+<main id="scoreView" class="score-shell hidden">
+    <section class="score-card">
+        <div class="brand-mark" aria-hidden="true">✓</div>
+        <p class="eyebrow">The final chapter</p>
+        <h1>Results</h1>
+        <p class="lead">Every contribution changed the ending.</p>
+        <ol id="scoreList" class="score-list"></ol>
+        <button class="primary-button" type="button" onclick="window.location.reload()">Return home</button>
+    </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
