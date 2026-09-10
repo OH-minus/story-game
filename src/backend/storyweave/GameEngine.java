@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
@@ -152,6 +153,23 @@ public final class GameEngine {
         return players.stream().map(player -> new PlayerForScoring(player.id, player.name, player.story)).toList();
     }
 
+    public synchronized void assignStories(Map<String, String> storiesByPlayerId) {
+        if (phase != Phase.READING && phase != Phase.PLAYING) {
+            throw new GameException(409, "Stories can only be assigned after all players join");
+        }
+        Map<String, String> incoming = new HashMap<>(storiesByPlayerId);
+        for (Player player : players) {
+            String story = incoming.remove(player.id);
+            if (story == null || story.isBlank()) {
+                throw new GameException(400, "Missing story for player " + player.name);
+            }
+            player.story = story;
+        }
+        if (!incoming.isEmpty()) {
+            throw new GameException(400, "Received stories for unknown players");
+        }
+    }
+
     public synchronized String sharedStory() {
         return sharedStory.toString();
     }
@@ -267,7 +285,7 @@ public final class GameEngine {
     private static final class Player {
         private final String id;
         private final String name;
-        private final String story;
+        private String story;
         private long remainingMillis;
 
         private Player(String id, String name, String story, long remainingMillis) {

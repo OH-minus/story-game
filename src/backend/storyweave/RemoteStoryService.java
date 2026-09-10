@@ -38,11 +38,10 @@ public final class RemoteStoryService implements StoryService {
     public String createStory(String theme, String playerName, int version, int playerCount) throws Exception {
         String prompt = PromptTemplates.load("story-generation.md", Map.of(
                 "theme", theme,
-                "playerName", playerName,
-                "version", Integer.toString(version),
+                "versionIndex", Integer.toString(version + 1),
                 "playerCount", Integer.toString(playerCount)
         ));
-        return complete(prompt, 500).strip();
+        return complete(prompt, 2000, false).strip();
     }
 
     @Override
@@ -51,7 +50,7 @@ public final class RemoteStoryService implements StoryService {
                 "sharedStory", sharedStory,
                 "referenceStory", referenceStory
         ));
-        return parseScore(complete(prompt, 20));
+        return parseScore(complete(prompt, 20, true));
     }
 
     @Override
@@ -61,16 +60,20 @@ public final class RemoteStoryService implements StoryService {
                 "sharedStory", sharedStory,
                 "insertedTokens", insertedTokens
         ));
-        return parseScore(complete(prompt, 20));
+        return parseScore(complete(prompt, 20, true));
     }
 
     private String complete(String prompt, int maxTokens) throws IOException, InterruptedException {
+        return complete(prompt, maxTokens, true);
+    }
+
+    private String complete(String prompt, int maxTokens, boolean disableReasoning) throws IOException, InterruptedException {
         Map<String, Object> payload = new HashMap<>();
         payload.put("model", model);
         payload.put("temperature", 0.4);
         payload.put("max_tokens", maxTokens);
         payload.put("messages", List.of(Map.of("role", "user", "content", prompt)));
-        if (supportsReasoningToggle(model)) {
+        if (disableReasoning && supportsReasoningToggle(model)) {
             payload.put("thinking", Map.of("type", "disabled"));
         }
         ServerLogger.logLlmRequest(endpoint.toString(), model, maxTokens, prompt);

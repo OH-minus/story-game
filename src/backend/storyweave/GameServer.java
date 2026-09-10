@@ -10,13 +10,15 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class GameServer implements AutoCloseable {
     private final HttpServer server;
@@ -27,7 +29,7 @@ public final class GameServer implements AutoCloseable {
     private final StoryService fallbackScorer = new LocalStoryService();
     private final String theme;
     private final int expectedPlayers;
-    private final AtomicInteger storyVersion = new AtomicInteger();
+    private final AtomicBoolean storiesAssigned = new AtomicBoolean(false);
 
     public GameServer(int port, GameEngine game, StoryService storyService, String theme, int expectedPlayers)
             throws IOException {
@@ -108,12 +110,12 @@ public final class GameServer implements AutoCloseable {
             Map<String, Object> body = readJson(exchange);
             String name = string(body, "name");
             GameEngine.validatePlayerName(name);
-            int version = storyVersion.getAndIncrement();
-            String story = storyService.createStory(theme, name, version, expectedPlayers);
-            GameEngine.JoinResult joined = game.join(name, story);
+            GameEngine.JoinResult joined = game.join(name, "");
+            assignStoriesWhenReady();
+            String story = String.valueOf(game.snapshot(joined.playerId()).get("story"));
             sendJson(exchange, 201, Map.of(
                     "playerId", joined.playerId(),
-                    "story", joined.story(),
+                    "story", story,
                     "readSeconds", joined.readSeconds()
             ));
         } catch (GameEngine.GameException exception) {
@@ -122,6 +124,28 @@ public final class GameServer implements AutoCloseable {
             sendError(exchange, 400, exception.getMessage());
         } catch (Exception exception) {
             sendError(exchange, 502, "Could not generate a story: " + exception.getMessage());
+        }
+    }
+
+    private void assignStoriesWhenReady() throws Exception {
+        if (storiesAssigned.get() || game.phase() == GameEngine.Phase.WAITING) {
+            return;
+        }
+        if (!storiesAssigned.compareAndSet(false, true)) {
+            return;
+        }
+        try {
+            List<GameEngine.PlayerForScoring> players = game.playersForScoring();
+            Map<String, String> storiesByPlayerId = new HashMap<>();
+            for (int version = 0; version < players.size(); version++) {
+                GameEngine.PlayerForScoring player = players.get(version);
+                String story = storyService.createStory(theme, player.name(), version, expectedPlayers);
+                storiesByPlayerId.put(player.id(), story);
+            }
+            game.assignStories(storiesByPlayerId);
+        } catch (Exception exception) {
+            storiesAssigned.set(false);
+            throw exception;
         }
     }
 
