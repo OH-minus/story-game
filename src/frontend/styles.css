@@ -205,6 +205,11 @@ button:disabled {
     min-height: 100vh;
     display: grid;
     grid-template-columns: 18rem minmax(0, 1fr);
+    transition: grid-template-columns 180ms;
+}
+
+.game-shell:has(.sidebar.collapsed) {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
 }
 
 .sidebar {
