@@ -113,7 +113,7 @@ function renderState(state) {
     renderStory(state.sharedStory);
     const myTurn = state.phase === "PLAYING" && state.currentPlayerId === playerId;
     elements.tokenInput.disabled = !myTurn;
-    elements.referencePanel.classList.toggle("hidden", state.phase !== "READING");
+    elements.referencePanel.classList.toggle("hidden", state.phase === "WAITING");
 
     if (state.phase === "WAITING") {
         elements.instruction.textContent = `Waiting for ${state.expectedPlayers - state.players.length} more writer${state.expectedPlayers - state.players.length === 1 ? "" : "s"}`;
