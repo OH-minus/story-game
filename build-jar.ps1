@@ -18,7 +18,7 @@ if (Test-Path $jarPath) {
     }
 }
 
-$sources = (Get-ChildItem (Join-Path $projectRoot "src\backend\storygame\*.java")).FullName
+$sources = (Get-ChildItem (Join-Path $projectRoot "src\backend\storyweave\*.java")).FullName
 javac --release 21 --add-modules jdk.httpserver -d $buildDirectory $sources
 if ($LASTEXITCODE -ne 0) {
     throw "Java compilation failed"
