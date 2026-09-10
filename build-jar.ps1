@@ -29,7 +29,7 @@ New-Item -ItemType Directory -Force (Join-Path $buildDirectory "backend\prompts"
 Copy-Item (Join-Path $projectRoot "src\backend\prompts\*") (Join-Path $buildDirectory "backend\prompts")
 
 Remove-Item $temporaryJarPath -Force -ErrorAction SilentlyContinue
-jar --create --file $temporaryJarPath --main-class backend.storygame.Main -C $buildDirectory .
+jar --create --file $temporaryJarPath --main-class backend.storyweave.Main -C $buildDirectory .
 if ($LASTEXITCODE -ne 0) {
     throw "JAR packaging failed"
 }

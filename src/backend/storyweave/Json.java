@@ -1,4 +1,4 @@
-package backend.storygame;
+package backend.storyweave;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

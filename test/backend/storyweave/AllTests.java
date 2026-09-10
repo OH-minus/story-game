@@ -1,4 +1,4 @@
-package backend.storygame;
+package backend.storyweave;
 
 public final class AllTests {
     private AllTests() {

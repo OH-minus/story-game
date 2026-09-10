@@ -1,4 +1,4 @@
-package backend.storygame;
+package backend.storyweave;
 
 import java.io.Serial;
 import java.time.Clock;

@@ -18,13 +18,13 @@ Compile from the project root in PowerShell:
 ```powershell
 New-Item -ItemType Directory -Force out\production | Out-Null
 javac --add-modules jdk.httpserver -d out\production (Get-ChildItem src\backend\storygame\*.java).FullName
-java --add-modules jdk.httpserver -cp out\production backend.storygame.Main --local --theme "a city above the clouds" --players 2
+java --add-modules jdk.httpserver -cp out\production backend.storyweave.Main --local --theme "a city above the clouds" --players 2
 ```
 
 Run the command above as a complete command in a PowerShell terminal. If you run the application from IntelliJ IDEA,
 create an Application run configuration with these fields instead:
 
-- Main class: `backend.storygame.Main`
+- Main class: `storyweave`
 - VM options: `--add-modules jdk.httpserver`
 - Program arguments: `--local --theme "a city above the clouds" --players 2`
 
@@ -57,13 +57,13 @@ Start without `--local`; the program prompts for the chat-completions URL, API k
 connection, then prints the server port:
 
 ```powershell
-java --add-modules jdk.httpserver -cp out\production backend.storygame.Main
+java --add-modules jdk.httpserver -cp out\production backend.storyweave.Main
 ```
 
 Non-interactive configuration is also supported:
 
 ```powershell
-java --add-modules jdk.httpserver -cp out\production backend.storygame.Main `
+java --add-modules jdk.httpserver -cp out\production backend.storyweave.Main `
   --url "https://api.openai.com/v1/chat/completions" --key "..." --model "gpt-4o-mini" `
   --theme "an expedition beneath the ice" --port 8080 --players 3
 ```
@@ -93,15 +93,15 @@ New-Item -ItemType Directory -Force out\test | Out-Null
 javac --add-modules jdk.httpserver -d out\test `
   (Get-ChildItem src\backend\storygame\*.java).FullName `
   (Get-ChildItem test\backend\storygame\*.java).FullName
-java --add-modules jdk.httpserver -ea -cp out\test backend.storygame.AllTests
+java --add-modules jdk.httpserver -ea -cp out\test backend.storyweave.AllTests
 ```
 
 ## Project layout
 
-- `src/backend/storygame`: game engine, HTTP server, JSON support, and LLM clients
+- `storyweave`: game engine, HTTP server, JSON support, and LLM clients
 - `src/backend/prompts`: editable prompt formats for generation, similarity, and error deductions
 - `src/frontend`: responsive HTML, CSS, and JavaScript client
-- `test/backend/storygame`: engine, validation, JSON, and HTTP integration tests
+- `test/backend/storyweave`: engine, validation, JSON, and HTTP integration tests
 
 All shared state is controlled by synchronized backend operations. Browser clients poll snapshots twice per second, so
 turns, clocks, player lists, story text, and results remain consistent across participants.

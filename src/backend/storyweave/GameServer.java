@@ -1,4 +1,4 @@
-package backend.storygame;
+package backend.storyweave;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;

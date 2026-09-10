@@ -1,4 +1,4 @@
-package backend.storygame;
+package backend.storyweave;
 
 import java.net.URI;
 import java.net.http.HttpClient;
