@@ -6,6 +6,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -64,12 +65,14 @@ public final class RemoteStoryService implements StoryService {
     }
 
     private String complete(String prompt, int maxTokens) throws IOException, InterruptedException {
-        Map<String, Object> payload = Map.of(
-                "model", model,
-                "temperature", 0.4,
-                "max_tokens", maxTokens,
-                "messages", List.of(Map.of("role", "user", "content", prompt))
-        );
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("model", model);
+        payload.put("temperature", 0.4);
+        payload.put("max_tokens", maxTokens);
+        payload.put("messages", List.of(Map.of("role", "user", "content", prompt)));
+        if (supportsReasoningToggle(model)) {
+            payload.put("thinking", Map.of("type", "disabled"));
+        }
         ServerLogger.logLlmRequest(endpoint.toString(), model, maxTokens, prompt);
         HttpRequest request = HttpRequest.newBuilder(endpoint)
                 .timeout(Duration.ofSeconds(60))
@@ -130,5 +133,9 @@ public final class RemoteStoryService implements StoryService {
         } catch (NumberFormatException exception) {
             throw new IOException("LLM did not return an integer score: " + response, exception);
         }
+    }
+
+    private static boolean supportsReasoningToggle(String model) {
+        return model != null && model.toLowerCase().contains("deepseek");
     }
 }
