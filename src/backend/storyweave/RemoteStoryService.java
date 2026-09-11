@@ -26,7 +26,7 @@ public final class RemoteStoryService implements StoryService {
         }
         this.endpoint = URI.create(endpoint);
         this.apiKey = apiKey;
-        this.model = model == null || model.isBlank() ? "gpt-4o-mini" : model;
+        this.model = model;
         this.client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
     }
 
